@@ -520,7 +520,7 @@ public class NonPersistentTopic extends AbstractTopic implements Topic, TopicPol
     @Override
     public CompletableFuture<Void> checkReplication() {
         TopicName name = TopicName.get(topic);
-        if (!name.isGlobal()) {
+        if (isLocalTopic()) {
             return CompletableFuture.completedFuture(null);
         }
 
@@ -893,7 +893,7 @@ public class NonPersistentTopic extends AbstractTopic implements Topic, TopicPol
     }
 
     public boolean isActive() {
-        if (TopicName.get(topic).isGlobal()) {
+        if (!isLocalTopic()) {
             // No local consumers and no local producers
             return !subscriptions.isEmpty() || hasLocalProducers();
         }
@@ -912,7 +912,7 @@ public class NonPersistentTopic extends AbstractTopic implements Topic, TopicPol
         } else {
             if (System.nanoTime() - lastActive > TimeUnit.SECONDS.toNanos(maxInactiveDurationInSec)) {
 
-                if (TopicName.get(topic).isGlobal()) {
+                if (!isLocalTopic()) {
                     // For global namespace, close repl producers first.
                     // Once all repl producers are closed, we can delete the topic,
                     // provided no remote producers connected to the broker.

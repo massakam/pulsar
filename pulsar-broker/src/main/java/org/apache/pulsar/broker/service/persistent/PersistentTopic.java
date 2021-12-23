@@ -1369,7 +1369,7 @@ public class PersistentTopic extends AbstractTopic implements Topic, AddEntryCal
     @Override
     public CompletableFuture<Void> checkReplication() {
         TopicName name = TopicName.get(topic);
-        if (!name.isGlobal()) {
+        if (isLocalTopic()) {
             return CompletableFuture.completedFuture(null);
         }
 
@@ -1388,7 +1388,7 @@ public class PersistentTopic extends AbstractTopic implements Topic, AddEntryCal
 
                     // if local cluster is removed from global namespace cluster-list : then delete topic forcefully
                     // because pulsar doesn't serve global topic without local repl-cluster configured.
-                    if (TopicName.get(topic).isGlobal() && !configuredClusters.contains(localCluster)) {
+                    if (name.isGlobal() && !configuredClusters.contains(localCluster)) {
                         log.info("Deleting topic [{}] because local cluster is not part of "
                                 + " global namespace repl list {}", topic, configuredClusters);
                         return deleteForcefully();
@@ -2246,7 +2246,7 @@ public class PersistentTopic extends AbstractTopic implements Topic, AddEntryCal
                 }
                 break;
         }
-        if (TopicName.get(topic).isGlobal()) {
+        if (!isLocalTopic()) {
             // no local producers
             return hasLocalProducers();
         } else {
@@ -2278,7 +2278,7 @@ public class PersistentTopic extends AbstractTopic implements Topic, AddEntryCal
         } else {
             CompletableFuture<Void> replCloseFuture = new CompletableFuture<>();
 
-            if (TopicName.get(topic).isGlobal()) {
+            if (!isLocalTopic()) {
                 // For global namespace, close repl producers first.
                 // Once all repl producers are closed, we can delete the topic,
                 // provided no remote producers connected to the broker.

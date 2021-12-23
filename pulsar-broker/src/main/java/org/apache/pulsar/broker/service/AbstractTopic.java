@@ -43,6 +43,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.pulsar.broker.ServiceConfiguration;
+import org.apache.pulsar.broker.namespace.NamespaceService;
 import org.apache.pulsar.broker.resourcegroup.ResourceGroup;
 import org.apache.pulsar.broker.resourcegroup.ResourceGroupPublishLimiter;
 import org.apache.pulsar.broker.service.BrokerServiceException.ConsumerBusyException;
@@ -1006,6 +1007,13 @@ public abstract class AbstractTopic implements Topic, TopicPolicyListener<TopicP
             this.topicPublishRateLimiter = PublishRateLimiter.DISABLED_RATE_LIMITER;
             enableProducerReadForPublishRateLimiting();
         }
+    }
+
+    protected boolean isLocalTopic() {
+        TopicName topicName = TopicName.get(topic);
+        return (!topicName.isGlobal() || NamespaceService.getHeartbeatNamespaceV2(
+                brokerService.pulsar().getAdvertisedAddress(), brokerService.pulsar().getConfiguration())
+                        .equals(topicName.getNamespaceObject()));
     }
 
     public HierarchyTopicPolicies getHierarchyTopicPolicies() {
