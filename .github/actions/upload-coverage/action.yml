@@ -57,10 +57,15 @@ runs:
         flags: ${{ inputs.flags }}
         fail_ci_if_error: true
         verbose: true
+        dry_run: true
     - name: "Wait 15 seconds before next attempt"
       if: steps.codecov-upload-1.outcome == 'failure'
       shell: bash
-      run: sleep 15
+      run: |
+        echo "===== pwd: $(pwd) ====="
+        find . -type f -name jacoco.xml
+        echo "======================="
+        sleep 15
     - name: "Upload to Codecov (attempt #2)"
       id: codecov-upload-2
       if: steps.codecov-upload-1.outcome == 'failure'
