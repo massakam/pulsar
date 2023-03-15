@@ -48,6 +48,12 @@ runs:
           echo "$REPO_URL isn't a public repository. Skipping uploading of coverage metrics."
           echo "passed=false" >> $GITHUB_OUTPUT
         }
+    - name: "YYY Debug YYY"
+      shell: bash
+      run: |
+        echo "===== pwd: $(pwd) ====="
+        find .. -type f -path '*jacoco_test_coverage_report*'
+        echo "======================="
     - name: "Upload to Codecov (attempt #1)"
       id: codecov-upload-1
       if: steps.repo-check.outputs.passed == 'true'
@@ -61,11 +67,7 @@ runs:
     - name: "Wait 15 seconds before next attempt"
       if: steps.codecov-upload-1.outcome == 'failure'
       shell: bash
-      run: |
-        echo "===== pwd: $(pwd) ====="
-        find . -type f -name jacoco.xml
-        echo "======================="
-        sleep 15
+      run: sleep 15
     - name: "Upload to Codecov (attempt #2)"
       id: codecov-upload-2
       if: steps.codecov-upload-1.outcome == 'failure'
